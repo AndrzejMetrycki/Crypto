@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <math.h>
 
+#include <valarray>
 
 
 using namespace std;
@@ -120,7 +121,7 @@ class CPrimeNr_Fermat : public CPrimeNr
 public:
 	CPrimeNr_Fermat(void)
 	{
-		srand(time(0));
+		srand((unsigned int)time(0));
 	}
 	bool IsPrime(_int_t iNr)
 	{
@@ -166,7 +167,7 @@ class CPrimeNr_Miller : public CPrimeNr
 public:
 	CPrimeNr_Miller(void)
 	{
-		srand(time(0));
+		srand((unsigned int)time(0));
 	}
 	
 	_int_t modulo(_int_t base, _int_t exponent, _int_t mod)
@@ -294,7 +295,7 @@ class CPrimeNr_Rabin : public CPrimeNr
 public:
 	CPrimeNr_Rabin(void)
 	{
-		srand(time(0));
+		srand((unsigned int)time(0));
 	}
 
 	using ll = _int_t;
@@ -382,7 +383,7 @@ bool IsPrimaryNumber(uint64_t iNr)
 	if (!(iNr % 2))
 		return false;
 
-	uint64_t iEnd = sqrt((double)iNr)+1;
+	uint64_t iEnd = (uint64_t)sqrt((double)iNr)+1;
 	for (uint64_t i = 3; i <= iEnd; i+=2)
 	{
 		if (!(iNr%i))
@@ -522,6 +523,32 @@ private:
 	}
 };
 
+
+
+void Factoring(_int_t iVal)
+{
+	
+
+	CFactoring_Simple mFactor;
+
+	auto t1 = steady_clock::now();
+	auto viFactor = mFactor.Factor(iVal);
+
+
+
+	auto d = steady_clock::now() - t1;
+	auto ms = duration_cast<milliseconds>(d).count();
+
+	cout << "Czas: " << (double)ms / 1000 << endl;
+
+
+	for (uint32_t i = 0; i != viFactor.size(); ++i)
+	{
+		cout << "LF[" << i << "]: " << viFactor[i] << endl;
+	}
+}
+
+
 void Factoring(void)
 {
 	CPrime_Strong mSimple;
@@ -543,45 +570,103 @@ void Factoring(void)
 	}
 	_int_t iMulNr = m_viPrime[0] * m_viPrime[1];
 	//iMulNr += 2;
-	cout << "Iloczyn liczb: " << iMulNr <<endl;
-
-	CFactoring_Simple mFactor;
-
-	auto t1 = steady_clock::now();
-	auto viFactor = mFactor.Factor(iMulNr);
+	cout << "Iloczyn liczb: " << iMulNr << endl;
 
 
-	
-	auto d = steady_clock::now() - t1; 
-	auto ms = duration_cast<milliseconds>(d).count();
-
-	cout << "Czas: " <<(double)ms/1000 <<endl;
+	Factoring(iMulNr);
+}
 
 
-	for (uint32_t i = 0; i != viFactor.size(); ++i)
+void FindPrime(void)
+{
+	cout << "Wybierz algorytm wyszukiwania" << endl;
+
+
+	string mStr;
+	bool bFirst = true;
+
+	do
 	{
-		cout << "LF[" << i << "]: " << viFactor[i] << endl;
+
+		if (!bFirst)
+		{
+			system("cls");
+			cout << "Wprowadzono niewlasciwa wartosc, powtorz" << endl;
+		}
+
+
+		bFirst = false;
+
+		cout << "1: Metoda Naiwna" << endl;
+		cout << "2: Algorytm Millera" << endl;
+		cout << "3: Algorytm Fermata" << endl;
+		cout << "E - konczy prace programu" << endl;
+
+		char pTmp[1024];
+		memset(pTmp, 0, sizeof(pTmp));
+
+		cin >> pTmp;
+
+		mStr = string(pTmp);
+
+
+
+
+	} while (mStr.length() != 1 || !(mStr[0] == '1' || mStr[0] == '2' || mStr[0] == '3' || mStr[0] == 'E' || mStr[0] == 'e'));
+
+	CPrimeNr *pPrime = nullptr;
+	switch (mStr[0])
+	{
+	case '1':
+		pPrime = new CPrimeNr_SimpleMethod();
+		break;
+	case '2':
+		pPrime = new CPrimeNr_Miller();
+		break;
+	case '3':
+		pPrime = new CPrimeNr_Fermat();
+		break;
+	case 'E':
+	case 'e':
+		exit(0);
+		break;
 	}
 
 
+	
 
+	_int_t iStart = 2305843009213693951;
+	_int_t iEnd = iStart + 5000;
+
+/*
+	cout << "Wprowadz wartosc poczatkowa wyszukiwania" << endl;
+	cin >> iStart;
+
+	cout << "Wprowadz wartosc koncowa wyszukiwania" << endl;
+	cin >> iEnd;
+	*/
+
+
+	
+
+	pPrime->Multithread_FindPrimaryNumbers(iStart, iEnd);
+
+	
+
+	delete pPrime;
 }
 
 
 
 int main(void)
 {
-	{
-		CD tmp;
-	}
-
-
-
 	Factoring();
 	system("pause");
 	return 0;
 
-
+	FindPrime();
+	system("pause");
+	return 0;
 	cout << "Czesc" << endl;
 	uint64_t iBegin = 2305843009213693951;
 	uint64_t iEnd = iBegin + 160;
@@ -593,7 +678,7 @@ int main(void)
 	
 
 
-	for (_int_t i = 2; i != 100000; ++i)
+	for (_int_t i = 2; i != 10000; ++i)
 	{
 		bool b1 = mSimple.IsPrime(i);
 		bool b2 = mMiller.IsPrime(i);
