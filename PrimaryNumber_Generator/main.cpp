@@ -1012,6 +1012,7 @@ void RSA_Test(void)
 		cout << "Msg C[" << i << "]: " << rsaMsg[i] << endl;
 	}
 
+	Factoring(mRsa.m_iN);
 
 	cout << endl << endl;
 	Rsa_DeCrypt(rsaMsg, mRsa);
