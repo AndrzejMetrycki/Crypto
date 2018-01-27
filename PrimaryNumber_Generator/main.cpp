@@ -1,4 +1,4 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 #include <iostream>
 
 #include <thread>
@@ -322,8 +322,8 @@ private:
 		return x % mod;
 	}
 	/*
-	�* modular exponentiation
-	 �*/
+	 * modular exponentiation
+	  */
 	ll modulo(ll base, ll exponent, ll mod)
 	{
 		ll x = 1;
@@ -339,8 +339,8 @@ private:
 	}
 
 	/*
-	�* Miller-Rabin primality test, iteration signifies the accuracy
-	 �*/
+	 * Miller-Rabin primality test, iteration signifies the accuracy
+	  */
 	bool Miller(ll p, int iteration)
 	{
 		if (p < 2)
@@ -656,10 +656,446 @@ void FindPrime(void)
 	delete pPrime;
 }
 
+//labelFor:
+typedef int64_t _uint_t;
+vector<_uint_t> ResztaKwadratowa(_uint_t iP)
+{
+	vector<_uint_t> mTmp;
+	for (_uint_t i = 1; i != iP; ++i)
+	{
+		
+		_uint_t iNr = i*i;
+		iNr %= iP;
+		cout << "Reszta kwadratowa [" << i << "] = " << iNr << endl;
+		for (_uint_t iCnt = 0; iCnt != mTmp.size(); iCnt++)
+		{
+
+			if (iNr == mTmp[iCnt])
+			{
+				goto labelFor;
+			}
+		}
+		
+		mTmp.push_back(iNr);
 
 
+	labelFor:;
+
+	}
+
+	return mTmp;
+}
+
+uint32_t FastPow(_uint_t iNr, _uint_t iPow)
+{
+	_uint_t iResp = 1;
+	for (_uint_t i = 0; i < iPow; ++i)
+	{
+		iResp *= iNr;
+	}
+
+	return iResp;
+}
+
+
+
+_uint_t PowMod(_uint_t base, _uint_t exponent, _uint_t mod)
+{
+	_uint_t x = 1;
+	_uint_t y = base;
+	while (exponent > 0)
+	{
+		if (exponent % 2 == 1)
+			x = (x * y) % mod;
+		y = (y * y) % mod;
+		exponent = exponent / 2;
+	}
+	return x % mod;
+}
+
+_uint_t Legendre(_uint_t a, _uint_t n)
+{
+	_uint_t iRes = PowMod(a, (n - 1) / 2, n);
+
+
+	if (iRes == n - 1)
+	{
+		return -1;
+	}
+
+	return iRes;
+}
+
+
+void Check_Legendre(void)
+{
+	//_uint_t Legendre(_uint_t a, _uint_t n)
+	_uint_t n = 519;
+
+/*
+	for (_uint_t i = 510; i < 1000; ++i)
+	{
+		if (IsPrimaryNumber(i))
+		{
+			n = i;
+			break;
+		}
+	}
+*/
+	bool bIsPrime = IsPrimaryNumber(n);
+
+	if (bIsPrime)
+	{
+		cout << "Liczba jest pierwsza " << n << endl;
+	}
+	else
+	{
+		cout << "Liczba nie jest pierwsza " << n << endl;
+	}
+
+	for (_uint_t i = 3; i < n; i += 1)
+	{
+		_uint_t iLegendre = Legendre(i, n);
+
+
+		cout << "Legendre [" << i << "]: " << iLegendre << endl;
+
+	}
+
+
+}
+
+
+void ResztyKwadratowe(void)
+{
+	Check_Legendre();
+	return;
+	_uint_t iNr = 17;
+	vector<_uint_t> mData = ResztaKwadratowa(iNr);
+	
+	cout << "Reszty kwadratowe: dla: p="<< iNr << endl;
+
+	for (_uint_t i = 0; i != mData.size(); ++i)
+	{
+		cout << "Reszty kwadratowe: "<< mData[i] << endl;
+	}
+
+	for (_uint_t i = 1; i != iNr; ++i)
+	{
+		_uint_t iRes = FastPow(i, (iNr - 1) / 2) % iNr;
+
+		iRes = PowMod(i, (iNr - 1) / 2, iNr);
+		cout << "Wynik Operacji dla :" << i << ": " << iRes << endl;
+	}
+
+}
+
+
+
+
+typedef struct
+{
+	uint64_t m_iP;
+	uint64_t m_iQ;
+	uint64_t m_iE;
+	uint64_t m_iD;
+	uint64_t m_iN;
+}rsa_t;
+
+uint64_t Nwd(uint64_t a, uint64_t b)
+{
+	uint64_t c;                    // Tworzymy zmienną c o typie int
+	while (b != 0)             // Tworzymy pętlę działającą gdy b ≠ 0
+	{
+		c = a % b;              // Zmienna c przyjmuje wartość a modulo b
+		a = b;                // Przypisujemy b do a
+		b = c;                // Przypisujemy c do b
+	}
+	return a;                 // Zwracamy a, czyli żądane NWD(a,b)
+
+}
+
+uint64_t Extended_Euklides(uint64_t nwd_b, uint64_t nwd_a)
+{
+	uint64_t r, nwd, a, q, b;
+	uint64_t x, x1, x2;
+	uint64_t y, y1, y2;
+
+
+
+
+	// a must be greater than b
+	if (nwd_b > nwd_a)
+	{
+		nwd = nwd_b;
+		nwd_b = nwd_a;
+		nwd_a = nwd;
+	}
+
+
+	//initialize a and b
+	a = nwd_a;
+	b = nwd_b;
+
+	//initialize r and nwd
+	q = a / b;
+	r = a - q*b;
+	nwd = b;
+
+	//initialize x and y
+	x2 = 1;
+	x1 = 0;
+	y2 = 0;
+	y1 = 1;
+	x = 1;
+	y = y2 - (q - 1)*y1;
+
+	while (r != 0)
+	{
+		a = b;
+		b = r;
+
+		x = x2 - q*x1;
+		x2 = x1;
+		x1 = x;
+
+		y = y2 - q*y1;
+		y2 = y1;
+		y1 = y;
+
+		nwd = r;
+		q = a / b;
+		r = a - q*b;
+	}
+	return y;
+}
+
+
+
+void Rsa_Init(rsa_t &rRsa)
+{
+	srand(time(0));
+	uint32_t iNr;
+	uint64_t iFi;
+	do
+	{
+		memset(&rRsa, 0, sizeof(rsa_t));
+
+		while (1)
+		{
+			iNr = (uint16_t)rand();
+			//iNr |= rand()<<16;
+			if (IsPrimaryNumber(iNr))
+			{
+				rRsa.m_iP = iNr;
+				break;
+			}
+		}
+		while (1)
+		{
+			iNr = (uint16_t)rand();
+			//iNr |= rand() << 16;
+			if (IsPrimaryNumber(iNr))
+			{
+				rRsa.m_iQ = iNr;
+				break;
+			}
+		}
+
+		rRsa.m_iN = rRsa.m_iQ * rRsa.m_iP;
+
+
+		iFi = (rRsa.m_iQ - 1)*(rRsa.m_iP - 1);
+		for (uint64_t i = rRsa.m_iQ + 1; i < iFi; ++i)
+		{
+			uint64_t iTmp = Nwd(i, iFi);
+
+			if (iTmp == 1)
+			{
+				rRsa.m_iE = i;
+				break;
+			}
+
+		}
+
+		uint64_t iOdw = Extended_Euklides(rRsa.m_iE, iFi);
+
+		rRsa.m_iD = iOdw;
+
+		if ((rRsa.m_iD*rRsa.m_iE) % iFi == 1)
+		{
+			break;
+		}
+
+
+	} while (1);
+	//cout << "Rsa Fi " << iFi << endl;
+	cout << "Rsa E*DModFi " << (rRsa.m_iD*rRsa.m_iE)% iFi << endl;
+}
+
+
+
+
+/*
+void Faktoryzacja(void)
+{
+	uint64_t iNr = 0;
+	cout << "Podaj liczbę do faktoryzacji" << endl;
+	cin >> iNr;
+
+	CFactoring_Simple mFactor;
+
+	auto t1 = steady_clock::now();
+	auto viFactor = mFactor.Factor(iVal);
+
+
+
+	auto d = steady_clock::now() - t1;
+	auto ms = duration_cast<milliseconds>(d).count();
+
+	cout << "Czas: " << (double)ms / 1000 << endl;
+
+
+	for (uint32_t i = 0; i != viFactor.size(); ++i)
+	{
+		cout << "LF[" << i << "]: " << viFactor[i] << endl;
+	}
+
+
+
+}
+*/
+
+
+void Rsa_EnCrypt(vector<uint64_t> &rData, rsa_t &rRsa)
+{
+	for (auto &p : rData)
+	{
+		p = PowMod(p, rRsa.m_iE, rRsa.m_iN);
+	}
+}
+void Rsa_DeCrypt(vector<uint64_t> &rData, rsa_t &rRsa)
+{
+	for (auto &p : rData)
+	{
+		p = PowMod(p, rRsa.m_iD, rRsa.m_iN);
+	}
+}
+
+void RSA_Test(void)
+{
+	rsa_t mRsa;
+	Rsa_Init(mRsa);
+
+	cout << "Rsa P " << mRsa.m_iP << endl;
+	cout << "Rsa Q " << mRsa.m_iQ << endl;
+	cout << "Rsa N " << mRsa.m_iN << endl;
+	cout << "Rsa E " << mRsa.m_iE << endl;
+	cout << "Rsa D " << mRsa.m_iD << endl;
+
+
+	string mStr("Ala ma kota i go bardzo lubi");
+
+	vector<uint64_t> rsaMsg;
+
+	for (uint32_t i = 0; i != mStr.length(); ++i)
+	{
+		rsaMsg.push_back(mStr[i]);
+		cout << "Msg D[" << i << "]: " << rsaMsg[i] << endl;
+	}
+
+	Rsa_EnCrypt(rsaMsg, mRsa);
+
+	cout << endl << endl;
+	for (uint32_t i = 0; i != rsaMsg.size(); ++i)
+	{
+		cout << "Msg C[" << i << "]: " << rsaMsg[i] << endl;
+	}
+
+
+	cout << endl << endl;
+	Rsa_DeCrypt(rsaMsg, mRsa);
+	for (uint32_t i = 0; i != rsaMsg.size(); ++i)
+	{
+		cout << "Msg DD[" << i << "]: " << rsaMsg[i] << endl;
+	}
+
+}
+
+int main1()
+{
+	int r, nwd, a, q, b;
+	int x, x1, x2;
+	int y, y1, y2;
+	int nwd_a, nwd_b;
+
+	//get all data
+	printf("Podaj pierwsza liczbe\n");
+	scanf("%d", &nwd_a);
+
+	printf("Podaj druga liczbe\n");
+	scanf("%d", &nwd_b);
+
+	// a must be greater than b
+	if (nwd_b > nwd_a)
+	{
+		nwd = nwd_b;
+		nwd_b = nwd_a;
+		nwd_a = nwd;
+	}
+
+
+	//initialize a and b
+	a = nwd_a;
+	b = nwd_b;
+
+	//initialize r and nwd
+	q = a / b;
+	r = a - q*b;
+	nwd = b;
+
+	//initialize x and y
+	x2 = 1;
+	x1 = 0;
+	y2 = 0;
+	y1 = 1;
+	x = 1;
+	y = y2 - (q - 1)*y1;
+
+	while (r != 0)
+	{
+		a = b;
+		b = r;
+
+		x = x2 - q*x1;
+		x2 = x1;
+		x1 = x;
+
+		y = y2 - q*y1;
+		y2 = y1;
+		y1 = y;
+
+		nwd = r;
+		q = a / b;
+		r = a - q*b;
+	}
+
+	//present results
+	printf("NWD(%d, %d) = %d = %d * %d + %d * %d\n", nwd_a, nwd_b, nwd, x, nwd_a, y, nwd_b);
+
+	if (nwd == 1)
+		printf("%d * %d mod %d = 1", nwd_b, y, nwd_a);
+	system("pause");
+	return 0;
+}
 int main(void)
 {
+	RSA_Test();
+	//ResztyKwadratowe();
+
+	system("pause");
+	return 0;
+
 	Factoring();
 	system("pause");
 	return 0;
@@ -685,7 +1121,7 @@ int main(void)
 		bool b3 = mRabin.IsPrime(i);
 		if (b1 != b2 || b3 != b2)
 		{
-			cout << "Rozbierzno��: " << i << "\t\t B1:" << b1 << " \tB2: " << b2 << " \tB3: " << b3 << endl;
+			cout << "Rozbierzność: " << i << "\t\t B1:" << b1 << " \tB2: " << b2 << " \tB3: " << b3 << endl;
 		}
 
 
@@ -743,3 +1179,14 @@ int main(void)
 	system("pause");
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
